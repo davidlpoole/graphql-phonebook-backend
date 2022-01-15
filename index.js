@@ -1,5 +1,7 @@
 const { ApolloServer, UserInputError, gql } = require('apollo-server')
 
+const uuid = require('uuid/v1')
+
 let persons = [
   {
     name: "Arto Hellas",
@@ -30,48 +32,44 @@ const typeDefs = gql`
     address: Address!
     id: ID!
   }
-
   type Address {
     street: String!
     city: String! 
   }
-
-  enum YesNo {  
-    YES  
+  enum YesNo {
+    YES
     NO
   }
-
   type Query {
     personCount: Int!
     allPersons(phone: YesNo): [Person!]!
     findPerson(name: String!): Person
   }
-
   type Mutation {
-  addPerson(
-    name: String!
-    phone: String
-    street: String!
-    city: String!
-  ): Person
-  editNumber(    
-      name: String!    
-      phone: String!  
-      ): Person
-  }
+    addPerson(
+      name: String!
+      phone: String
+      street: String!
+      city: String!
+    ): Person
+    editNumber(
+      name: String!
+      phone: String!
+    ): Person    
+  }  
 `
-const { v1: uuid } = require('uuid')
 
 const resolvers = {
-
   Query: {
     personCount: () => persons.length,
     allPersons: (root, args) => {
       if (!args.phone) {
         return persons
       }
+
       const byPhone = (person) =>
         args.phone === 'YES' ? person.phone : !person.phone
+
       return persons.filter(byPhone)
     },
     findPerson: (root, args) =>
@@ -101,6 +99,7 @@ const resolvers = {
       if (!person) {
         return null
       }
+
       const updatedPerson = { ...person, phone: args.phone }
       persons = persons.map(p => p.name === args.name ? updatedPerson : p)
       return updatedPerson
